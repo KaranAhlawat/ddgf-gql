@@ -1,0 +1,27 @@
+schema:
+  - graph/*.graphql
+
+# Where should the generated server code go?
+exec:
+  filename: internal/graph/generated.go
+  package: graph
+
+# Where should any generated models go?
+model:
+  filename: internal/model/generate.go
+  package: model
+
+# Where should the resolver implementations go?
+resolver:
+  layout: follow-schema
+  dir: internal/resolver
+  package: resolver
+  filename_template: "{name}.resolver.go"
+
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.ID
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
