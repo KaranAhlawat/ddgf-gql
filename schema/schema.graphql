@@ -1,0 +1,10 @@
+scalar Time
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Mutation
+
+type Query

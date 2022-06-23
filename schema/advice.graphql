@@ -1,0 +1,15 @@
+type Advice {
+    id: ID!
+    content: String!
+    tags: [Tag!]!
+}
+
+extend type Query {
+    advices: [Advice!]!
+    advice(id: ID!): Advice
+}
+
+extend type Mutation {
+    createAdvice(content: String!): Advice!
+    deleteAdvice(id: ID!): Boolean!
+}

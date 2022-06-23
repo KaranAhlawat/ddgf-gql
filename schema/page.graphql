@@ -1,0 +1,15 @@
+type Page {
+    id: ID!
+    time: Time!
+    content: String!
+}
+
+extend type Query {
+    pages: [Page!]!
+    page(id: ID!): Page
+}
+
+extend type Mutation {
+    createPage(content: String!): Page!
+    deletePage(id: ID!): Boolean!
+}
