@@ -1,26 +1,17 @@
 package main
 
 import (
-	"ddgf-new/internal/graph"
-	"ddgf-new/internal/resolver"
-
+	"ddgf-new/internal/server"
 	"log"
 	"net/http"
-
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 )
 
 func main() {
-	port := "8080"
+	s := server.NewServer()
 
-	server := handler.NewDefaultServer(
-		graph.NewExecutableSchema(graph.Config{Resolvers: &resolver.Resolver{}}),
-	)
+	s.SetupMiddleware()
+	s.SetupRoutes()
 
-	http.Handle("/", playground.Handler("GraphQL Playground", "/api"))
-	http.Handle("/api", server)
-
-	log.Printf("Connect to http://localhost:%s for GraphiQL", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Println("Listening on http://localhost:8080/api/graphiql")
+	log.Fatal(http.ListenAndServe(":8080", s.Router))
 }
