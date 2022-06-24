@@ -58,6 +58,8 @@ type ComplexityRoot struct {
 		DeleteAdvice func(childComplexity int, id string) int
 		DeletePage   func(childComplexity int, id string) int
 		DeleteTag    func(childComplexity int, id string) int
+		Tag          func(childComplexity int, tid string, aid string) int
+		Untag        func(childComplexity int, tid string, aid string) int
 	}
 
 	Page struct {
@@ -67,12 +69,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Advice  func(childComplexity int, id string) int
-		Advices func(childComplexity int) int
-		Page    func(childComplexity int, id string) int
-		Pages   func(childComplexity int) int
-		Tag     func(childComplexity int, id string) int
-		Tags    func(childComplexity int) int
+		Advice        func(childComplexity int, id string) int
+		Advices       func(childComplexity int) int
+		AdvicesForTag func(childComplexity int, id string) int
+		Page          func(childComplexity int, id string) int
+		Pages         func(childComplexity int) int
+		Tag           func(childComplexity int, id string) int
+		Tags          func(childComplexity int) int
 	}
 
 	Tag struct {
@@ -84,6 +87,8 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateAdvice(ctx context.Context, content string) (*model.Advice, error)
 	DeleteAdvice(ctx context.Context, id string) (bool, error)
+	Tag(ctx context.Context, tid string, aid string) (bool, error)
+	Untag(ctx context.Context, tid string, aid string) (bool, error)
 	CreatePage(ctx context.Context, content string) (*model.Page, error)
 	DeletePage(ctx context.Context, id string) (bool, error)
 	CreateTag(ctx context.Context, tag string) (*model.Tag, error)
@@ -96,6 +101,7 @@ type QueryResolver interface {
 	Page(ctx context.Context, id string) (*model.Page, error)
 	Tags(ctx context.Context) ([]*model.Tag, error)
 	Tag(ctx context.Context, id string) (*model.Tag, error)
+	AdvicesForTag(ctx context.Context, id string) ([]*model.Advice, error)
 }
 
 type executableSchema struct {
@@ -206,6 +212,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteTag(childComplexity, args["id"].(string)), true
 
+	case "Mutation.tag":
+		if e.complexity.Mutation.Tag == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_tag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Tag(childComplexity, args["tid"].(string), args["aid"].(string)), true
+
+	case "Mutation.untag":
+		if e.complexity.Mutation.Untag == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_untag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Untag(childComplexity, args["tid"].(string), args["aid"].(string)), true
+
 	case "Page.content":
 		if e.complexity.Page.Content == nil {
 			break
@@ -245,6 +275,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Advices(childComplexity), true
+
+	case "Query.advicesForTag":
+		if e.complexity.Query.AdvicesForTag == nil {
+			break
+		}
+
+		args, err := ec.field_Query_advicesForTag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AdvicesForTag(childComplexity, args["id"].(string)), true
 
 	case "Query.page":
 		if e.complexity.Query.Page == nil {
@@ -379,6 +421,8 @@ extend type Query {
 extend type Mutation {
     createAdvice(content: String!): Advice!
     deleteAdvice(id: ID!): Boolean!
+    tag(tid: ID!, aid: ID!): Boolean!
+    untag(tid: ID!, aid: ID!): Boolean!
 }`, BuiltIn: false},
 	{Name: "../../schema/page.graphql", Input: `type Page {
     id: ID!
@@ -413,6 +457,7 @@ type Query`, BuiltIn: false},
 extend type Query {
     tags: [Tag!]!
     tag(id: ID!): Tag
+    advicesForTag(id: ID!): [Advice!]!
 }
 
 extend type Mutation {
@@ -516,6 +561,54 @@ func (ec *executionContext) field_Mutation_deleteTag_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_tag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["tid"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tid"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tid"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["aid"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aid"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["aid"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_untag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["tid"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tid"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tid"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["aid"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aid"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["aid"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -532,6 +625,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_Query_advice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_advicesForTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -864,6 +972,116 @@ func (ec *executionContext) fieldContext_Mutation_deleteAdvice(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteAdvice_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_tag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_tag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Tag(rctx, fc.Args["tid"].(string), fc.Args["aid"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_tag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_tag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_untag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_untag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Untag(rctx, fc.Args["tid"].(string), fc.Args["aid"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_untag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_untag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -1562,6 +1780,69 @@ func (ec *executionContext) fieldContext_Query_tag(ctx context.Context, field gr
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_tag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_advicesForTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_advicesForTag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AdvicesForTag(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Advice)
+	fc.Result = res
+	return ec.marshalNAdvice2ᚕᚖddgfᚑnewᚋinternalᚋmodelᚐAdviceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_advicesForTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Advice_id(ctx, field)
+			case "content":
+				return ec.fieldContext_Advice_content(ctx, field)
+			case "tags":
+				return ec.fieldContext_Advice_tags(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Advice", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_advicesForTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3645,6 +3926,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "tag":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_tag(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "untag":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_untag(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createPage":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -3872,6 +4171,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_tag(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "advicesForTag":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_advicesForTag(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 

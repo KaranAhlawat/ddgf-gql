@@ -6,21 +6,34 @@ package resolver
 import (
 	"context"
 	"ddgf-new/internal/model"
-	"fmt"
 )
 
 func (r *mutationResolver) CreatePage(ctx context.Context, content string) (*model.Page, error) {
-	panic(fmt.Errorf("not implemented"))
+	page, _ := r.DB.CreatePage(content)
+	return page.ToModel(), nil
 }
 
 func (r *mutationResolver) DeletePage(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	err := r.DB.DeletePage(id)
+	return err == nil, err
 }
 
 func (r *queryResolver) Pages(ctx context.Context) ([]*model.Page, error) {
-	panic(fmt.Errorf("not implemented"))
+	modelPages := make([]*model.Page, 0)
+	pages, err := r.DB.GetPages()
+	if err != nil {
+		return modelPages, err
+	}
+	for _, page := range pages {
+		modelPages = append(modelPages, page.ToModel())
+	}
+	return modelPages, nil
 }
 
 func (r *queryResolver) Page(ctx context.Context, id string) (*model.Page, error) {
-	panic(fmt.Errorf("not implemented"))
+	page, err := r.DB.GetPage(id)
+	if err != nil {
+		return nil, err
+	}
+	return page.ToModel(), nil
 }

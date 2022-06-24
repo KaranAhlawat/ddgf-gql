@@ -2,13 +2,13 @@ package repo
 
 func (r *PSQLRepository) GetTags() ([]*Tag, error) {
 	var tags []*Tag
-	err := r.db.Preload("Advices").Find(&tags).Limit(50).Error
+	err := r.db.Find(&tags).Limit(50).Error
 	return tags, err
 }
 
 func (r *PSQLRepository) GetTag(id string) (*Tag, error) {
 	var tag *Tag
-	err := r.db.Preload("Advices").First(&tag, "id = ?", id).Error
+	err := r.db.First(&tag, "id = ?", id).Error
 	return tag, err
 }
 

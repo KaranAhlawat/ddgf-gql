@@ -3,12 +3,12 @@ package server
 import (
 	"ddgf-new/internal/graph"
 	"ddgf-new/internal/middleware"
+	"ddgf-new/internal/repo"
 	"ddgf-new/internal/resolver"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
-	"gorm.io/gorm"
 )
 
 type Server struct {
@@ -20,15 +20,15 @@ func NewServer() Server {
 	return Server{Router: r}
 }
 
-func (s *Server) SetupMiddleware(db *gorm.DB) {
-	repoMiddleware := middleware.RepoMiddleware(db)
+func (s *Server) SetupMiddleware() {
 	s.Router.Use(middleware.LoggingMiddleware)
-	s.Router.Use(repoMiddleware)
 }
 
-func (s *Server) SetupRoutes() {
+func (s *Server) SetupRoutes(db *repo.PSQLRepository) {
 	schema := graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolver.Resolver{},
+		Resolvers: &resolver.Resolver{
+			DB: db,
+		},
 	})
 	sh := handler.NewDefaultServer(schema)
 

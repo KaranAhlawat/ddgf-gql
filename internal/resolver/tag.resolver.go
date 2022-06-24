@@ -10,17 +10,35 @@ import (
 )
 
 func (r *mutationResolver) CreateTag(ctx context.Context, tag string) (*model.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	retTag, _ := r.DB.CreateTag(tag)
+	return retTag.ToModel(), nil
 }
 
 func (r *mutationResolver) DeleteTag(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	err := r.DB.DeleteTag(id)
+	return err == nil, err
 }
 
 func (r *queryResolver) Tags(ctx context.Context) ([]*model.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	mTags := make([]*model.Tag, 0)
+	tags, err := r.DB.GetTags()
+	if err != nil {
+		return mTags, err
+	}
+	for _, tag := range tags {
+		mTags = append(mTags, tag.ToModel())
+	}
+	return mTags, nil
 }
 
 func (r *queryResolver) Tag(ctx context.Context, id string) (*model.Tag, error) {
+	tag, err := r.DB.GetTag(id)
+	if err != nil {
+		return nil, err
+	}
+	return tag.ToModel(), nil
+}
+
+func (r *queryResolver) AdvicesForTag(ctx context.Context, id string) ([]*model.Advice, error) {
 	panic(fmt.Errorf("not implemented"))
 }

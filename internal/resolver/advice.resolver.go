@@ -10,17 +10,39 @@ import (
 )
 
 func (r *mutationResolver) CreateAdvice(ctx context.Context, content string) (*model.Advice, error) {
-	panic(fmt.Errorf("not implemented"))
+	advice, _ := r.DB.CreateAdvice(content)
+	return advice.ToModel(), nil
 }
 
 func (r *mutationResolver) DeleteAdvice(ctx context.Context, id string) (bool, error) {
+	err := r.DB.DeleteAdvice(id)
+	return err == nil, err
+}
+
+func (r *mutationResolver) Tag(ctx context.Context, tid string, aid string) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) Untag(ctx context.Context, tid string, aid string) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) Advices(ctx context.Context) ([]*model.Advice, error) {
-	panic(fmt.Errorf("not implemented"))
+	mAdvices := make([]*model.Advice, 0)
+	advices, err := r.DB.GetAdvices()
+	if err != nil {
+		return mAdvices, err
+	}
+	for _, advice := range advices {
+		mAdvices = append(mAdvices, advice.ToModel())
+	}
+	return mAdvices, nil
 }
 
 func (r *queryResolver) Advice(ctx context.Context, id string) (*model.Advice, error) {
-	panic(fmt.Errorf("not implemented"))
+	advice, err := r.DB.GetAdvice(id)
+	if err != nil {
+		return nil, err
+	}
+	return advice.ToModel(), nil
 }
