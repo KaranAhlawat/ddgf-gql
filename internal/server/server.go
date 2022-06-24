@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 type Server struct {
@@ -19,8 +20,10 @@ func NewServer() Server {
 	return Server{Router: r}
 }
 
-func (s *Server) SetupMiddleware() {
+func (s *Server) SetupMiddleware(db *gorm.DB) {
+	repoMiddleware := middleware.RepoMiddleware(db)
 	s.Router.Use(middleware.LoggingMiddleware)
+	s.Router.Use(repoMiddleware)
 }
 
 func (s *Server) SetupRoutes() {

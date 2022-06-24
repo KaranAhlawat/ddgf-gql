@@ -1,0 +1,14 @@
+version: "1.0.3"
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - 5432:5432
+    env_file:
+      - ".env"
+
+volumes:
+  ddgf:
+    driver: local
