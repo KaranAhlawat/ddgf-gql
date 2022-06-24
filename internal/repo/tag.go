@@ -16,11 +16,17 @@ func (r *PSQLRepository) CreateTag(content string) (*Tag, error) {
 	var tag *Tag = &Tag{
 		Tag: content,
 	}
-	err := r.db.Save(&tag).Error
+	err := r.db.Save(tag).Error
 	return tag, err
 }
 
 func (r *PSQLRepository) DeleteTag(id string) error {
 	err := r.db.Delete(&Tag{}, "id = ?", id).Error
 	return err
+}
+
+func (r *PSQLRepository) AdvicesForTag(id string) ([]*Advice, error) {
+	var tag Tag
+	err := r.db.Preload("Advices.Tags").First(&tag, "id = ?", id).Error
+	return tag.Advices, err
 }

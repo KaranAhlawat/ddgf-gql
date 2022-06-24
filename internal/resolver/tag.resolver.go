@@ -6,7 +6,6 @@ package resolver
 import (
 	"context"
 	"ddgf-new/internal/model"
-	"fmt"
 )
 
 func (r *mutationResolver) CreateTag(ctx context.Context, tag string) (*model.Tag, error) {
@@ -40,5 +39,13 @@ func (r *queryResolver) Tag(ctx context.Context, id string) (*model.Tag, error) 
 }
 
 func (r *queryResolver) AdvicesForTag(ctx context.Context, id string) ([]*model.Advice, error) {
-	panic(fmt.Errorf("not implemented"))
+	mAdvices := make([]*model.Advice, 0)
+	advices, err := r.DB.AdvicesForTag(id)
+	if err != nil {
+		return mAdvices, err
+	}
+	for _, advice := range advices {
+		mAdvices = append(mAdvices, advice.ToModel())
+	}
+	return mAdvices, nil
 }

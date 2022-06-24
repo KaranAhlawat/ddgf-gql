@@ -6,7 +6,6 @@ package resolver
 import (
 	"context"
 	"ddgf-new/internal/model"
-	"fmt"
 )
 
 func (r *mutationResolver) CreateAdvice(ctx context.Context, content string) (*model.Advice, error) {
@@ -19,12 +18,20 @@ func (r *mutationResolver) DeleteAdvice(ctx context.Context, id string) (bool, e
 	return err == nil, err
 }
 
-func (r *mutationResolver) Tag(ctx context.Context, tid string, aid string) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Tag(ctx context.Context, tid string, aid string) (*model.Advice, error) {
+	advice, err := r.DB.TagAdvice(tid, aid)
+	if err != nil {
+		return nil, err
+	}
+	return advice.ToModel(), nil
 }
 
-func (r *mutationResolver) Untag(ctx context.Context, tid string, aid string) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Untag(ctx context.Context, tid string, aid string) (*model.Advice, error) {
+	advice, err := r.DB.UntagAdvice(tid, aid)
+	if err != nil {
+		return nil, err
+	}
+	return advice.ToModel(), err
 }
 
 func (r *queryResolver) Advices(ctx context.Context) ([]*model.Advice, error) {

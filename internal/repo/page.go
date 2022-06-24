@@ -16,7 +16,7 @@ func (r *PSQLRepository) CreatePage(content string) (*Page, error) {
 	var page *Page = &Page{
 		Content: content,
 	}
-	err := r.db.Save(&page).Error
+	err := r.db.Save(page).Error
 	return page, err
 }
 

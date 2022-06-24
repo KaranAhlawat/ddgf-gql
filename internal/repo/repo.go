@@ -16,4 +16,6 @@ type Repository interface {
 	DeletePage(id string) error
 	DeleteAdvice(id string) error
 	DeleteTag(id string) error
+	TagAdvice(tid string, aid string) (*Advice, error)
+	UntagAdvice(tid string, aid string) (*Advice, error)
 }

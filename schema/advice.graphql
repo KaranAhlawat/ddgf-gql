@@ -12,6 +12,6 @@ extend type Query {
 extend type Mutation {
     createAdvice(content: String!): Advice!
     deleteAdvice(id: ID!): Boolean!
-    tag(tid: ID!, aid: ID!): Boolean!
-    untag(tid: ID!, aid: ID!): Boolean!
+    tag(tid: ID!, aid: ID!): Advice!
+    untag(tid: ID!, aid: ID!): Advice!
 }

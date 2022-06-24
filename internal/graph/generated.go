@@ -87,8 +87,8 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateAdvice(ctx context.Context, content string) (*model.Advice, error)
 	DeleteAdvice(ctx context.Context, id string) (bool, error)
-	Tag(ctx context.Context, tid string, aid string) (bool, error)
-	Untag(ctx context.Context, tid string, aid string) (bool, error)
+	Tag(ctx context.Context, tid string, aid string) (*model.Advice, error)
+	Untag(ctx context.Context, tid string, aid string) (*model.Advice, error)
 	CreatePage(ctx context.Context, content string) (*model.Page, error)
 	DeletePage(ctx context.Context, id string) (bool, error)
 	CreateTag(ctx context.Context, tag string) (*model.Tag, error)
@@ -421,8 +421,8 @@ extend type Query {
 extend type Mutation {
     createAdvice(content: String!): Advice!
     deleteAdvice(id: ID!): Boolean!
-    tag(tid: ID!, aid: ID!): Boolean!
-    untag(tid: ID!, aid: ID!): Boolean!
+    tag(tid: ID!, aid: ID!): Advice!
+    untag(tid: ID!, aid: ID!): Advice!
 }`, BuiltIn: false},
 	{Name: "../../schema/page.graphql", Input: `type Page {
     id: ID!
@@ -1004,9 +1004,9 @@ func (ec *executionContext) _Mutation_tag(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*model.Advice)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNAdvice2ᚖddgfᚑnewᚋinternalᚋmodelᚐAdvice(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_tag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1016,7 +1016,15 @@ func (ec *executionContext) fieldContext_Mutation_tag(ctx context.Context, field
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Advice_id(ctx, field)
+			case "content":
+				return ec.fieldContext_Advice_content(ctx, field)
+			case "tags":
+				return ec.fieldContext_Advice_tags(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Advice", field.Name)
 		},
 	}
 	defer func() {
@@ -1059,9 +1067,9 @@ func (ec *executionContext) _Mutation_untag(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*model.Advice)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNAdvice2ᚖddgfᚑnewᚋinternalᚋmodelᚐAdvice(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_untag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1071,7 +1079,15 @@ func (ec *executionContext) fieldContext_Mutation_untag(ctx context.Context, fie
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Advice_id(ctx, field)
+			case "content":
+				return ec.fieldContext_Advice_content(ctx, field)
+			case "tags":
+				return ec.fieldContext_Advice_tags(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Advice", field.Name)
 		},
 	}
 	defer func() {
