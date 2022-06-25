@@ -2,15 +2,17 @@ package repo
 
 import (
 	"context"
+	"ddgf-new/config"
+	"fmt"
 	"log"
 
 	"github.com/go-redis/redis/v9"
 )
 
-func NewRedisClient() *redis.Client {
+func NewRedisClient(config *config.Config) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
+    Addr:     fmt.Sprintf("%s:%s", config.RedisHost, fmt.Sprint(config.RedisPort)),
+		Password: config.RedistPassword,
 		DB:       0,
 	})
 

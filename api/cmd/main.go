@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ddgf-new/config"
 	"ddgf-new/internal/repo"
 	"ddgf-new/internal/server"
 	"log"
@@ -8,9 +9,14 @@ import (
 )
 
 func main() {
-	db := repo.InitPostgresConn()
+  config, err := config.LoadConfig("./")
+  if err != nil {
+    log.Fatalf("Unable to read config from .env file: %s\n", err.Error())
+  }
+
+	db := repo.InitPostgresConn(config)
+	rr := repo.NewRedisClient(config)
 	pr := repo.NewPSQLRepository(db)
-	rr := repo.NewRedisClient()
 
 	s := server.NewServer()
 

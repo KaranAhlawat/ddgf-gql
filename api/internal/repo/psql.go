@@ -1,18 +1,20 @@
 package repo
 
 import (
+	"ddgf-new/config"
+	"fmt"
+	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 type PSQLRepository struct {
 	db *gorm.DB
 }
 
-func InitPostgresConn() *gorm.DB {
-	db, err := gorm.Open(postgres.Open("host=localhost port=5432 user=gorm password=gorm sslmode=disable dbname=ddgf_dev"),
-		&gorm.Config{})
+func InitPostgresConn(config *config.Config) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(MakeDSNString(config)), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("error connecting to db: %s.\n", err)
 	} else {
@@ -29,6 +31,17 @@ func InitPostgresConn() *gorm.DB {
 	}
 
 	return db
+}
+
+func MakeDSNString(config *config.Config) string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		config.DbHost,
+		fmt.Sprint(config.DbPort),
+		config.DbUser,
+		config.DbPass,
+		config.DbName,
+	)
 }
 
 func NewPSQLRepository(db *gorm.DB) PSQLRepository {
