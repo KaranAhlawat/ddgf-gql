@@ -16,6 +16,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Get the session ID cookie
 		sid, err := r.Cookie("ddgf_sid")
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Forbidden. Please login to continue.", http.StatusForbidden)
 			return
 		}
@@ -23,6 +24,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Validate the sid
 		_, err = uuid.Parse(sid.Value)
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Forbidden. Please login to continue", http.StatusForbidden)
 			return
 		}
@@ -32,6 +34,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Get it from Redis if found
 		val, err := rc.Get(context.Background(), sid.Value).Result()
 		if err == redis.Nil {
+			log.Println(err)
+			http.Error(w, "Forbidden. Please login to continue", http.StatusForbidden)
+			return
+		} else if err != nil {
+			log.Println(err)
 			http.Error(w, "Forbidden. Please login to continue", http.StatusForbidden)
 			return
 		}
@@ -40,13 +47,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		var session repo.Session
 		err = json.Unmarshal([]byte(val), &session)
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Error reading your session. Please reloging.", http.StatusInternalServerError)
 			return
 		}
 
-		// If found, continue normal execution
-		log.Printf("UserID: %v\n", session.UID)
-		log.Printf("Role: %v\n", session.Role)
 		next.ServeHTTP(w, r)
 	})
 }

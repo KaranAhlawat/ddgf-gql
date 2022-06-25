@@ -29,6 +29,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if body.Password != "deita" {
+		log.Println("LoginHandler: password verification failed")
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Invalid Password.")
 		return
@@ -36,10 +37,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the redis conn
 	rc := r.Context().Value(middleware.RedisConn).(*redis.Client)
 
+	// Replace with actual GORM query
 	uid, err := uuid.Parse("fe1398ca-2feb-4cca-897f-f58e7b7aab3d")
 	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error retreiving user.")
 		return
 	}
+
 	sid := uuid.New()
 
 	session := repo.Session{
@@ -47,6 +53,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		SID:  sid,
 		UID:  uid,
 	}
+
 	ms, err := json.Marshal(&session)
 	if err != nil {
 		fmt.Println(err)

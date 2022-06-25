@@ -8,7 +8,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// Auth models
+
 type Redis string
+
+type Session struct {
+	Role string    `json:"role"`
+	SID  uuid.UUID `json:"sid"`
+	UID  uuid.UUID `json:"uid"`
+}
+
+// DB Models
 
 type Base struct {
 	CreatedAt time.Time
@@ -66,10 +76,4 @@ func (t *Tag) ToModel() *model.Tag {
 		ID:  t.ID.String(),
 		Tag: t.Tag,
 	}
-}
-
-type Session struct {
-	Role string    `json:"role"`
-	SID  uuid.UUID `json:"sid"`
-	UID  uuid.UUID `json:"uid"`
 }

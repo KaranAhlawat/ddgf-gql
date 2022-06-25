@@ -8,6 +8,7 @@ type Repository interface {
 	GetAdvice(id string) (*Advice, error)
 	GetTags() ([]*Tag, error)
 	GetTag(id string) (*Tag, error)
+	AdvicesForTag(id string) ([]*Advice, error)
 
 	// Write operations
 	CreatePage(content string) (*Page, error)

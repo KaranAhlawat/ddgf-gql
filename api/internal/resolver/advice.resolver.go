@@ -6,21 +6,25 @@ package resolver
 import (
 	"context"
 	"ddgf-new/internal/model"
+	u "ddgf-new/internal/util"
 )
 
 func (r *mutationResolver) CreateAdvice(ctx context.Context, content string) (*model.Advice, error) {
-	advice, _ := r.DB.CreateAdvice(content)
+	advice, err := r.DB.CreateAdvice(content)
+	u.LogError(err)
 	return advice.ToModel(), nil
 }
 
 func (r *mutationResolver) DeleteAdvice(ctx context.Context, id string) (bool, error) {
 	err := r.DB.DeleteAdvice(id)
+	u.LogError(err)
 	return err == nil, err
 }
 
 func (r *mutationResolver) Tag(ctx context.Context, tid string, aid string) (*model.Advice, error) {
 	advice, err := r.DB.TagAdvice(tid, aid)
 	if err != nil {
+		u.LogError(err)
 		return nil, err
 	}
 	return advice.ToModel(), nil
@@ -29,6 +33,7 @@ func (r *mutationResolver) Tag(ctx context.Context, tid string, aid string) (*mo
 func (r *mutationResolver) Untag(ctx context.Context, tid string, aid string) (*model.Advice, error) {
 	advice, err := r.DB.UntagAdvice(tid, aid)
 	if err != nil {
+		u.LogError(err)
 		return nil, err
 	}
 	return advice.ToModel(), err
@@ -38,6 +43,7 @@ func (r *queryResolver) Advices(ctx context.Context) ([]*model.Advice, error) {
 	mAdvices := make([]*model.Advice, 0)
 	advices, err := r.DB.GetAdvices()
 	if err != nil {
+		u.LogError(err)
 		return mAdvices, err
 	}
 	for _, advice := range advices {
@@ -49,6 +55,7 @@ func (r *queryResolver) Advices(ctx context.Context) ([]*model.Advice, error) {
 func (r *queryResolver) Advice(ctx context.Context, id string) (*model.Advice, error) {
 	advice, err := r.DB.GetAdvice(id)
 	if err != nil {
+		u.LogError(err)
 		return nil, err
 	}
 	return advice.ToModel(), nil
