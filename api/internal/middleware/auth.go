@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/google/uuid"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -18,14 +17,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "Forbidden. Please login to continue.", http.StatusForbidden)
-			return
-		}
-
-		// Validate the sid
-		_, err = uuid.Parse(sid.Value)
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "Forbidden. Please login to continue", http.StatusForbidden)
 			return
 		}
 

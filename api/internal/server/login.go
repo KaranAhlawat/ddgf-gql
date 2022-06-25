@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/rand"
 	"ddgf-new/internal/middleware"
 	"ddgf-new/internal/repo"
 	"encoding/json"
@@ -18,20 +19,17 @@ type Password struct {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
 	var body Password
-	err := decoder.Decode(&body)
+	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid POST body")
+		http.Error(w, "Invalid POST body", http.StatusBadRequest)
 		return
 	}
 
 	if body.Password != "deita" {
 		log.Println("LoginHandler: password verification failed")
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid Password.")
+		http.Error(w, "Invalid password.", http.StatusBadRequest)
 		return
 	}
 	// Get the redis conn
@@ -41,12 +39,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	uid, err := uuid.Parse("fe1398ca-2feb-4cca-897f-f58e7b7aab3d")
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error retreiving user.")
+		http.Error(w, "Error retreiving user.", http.StatusInternalServerError)
 		return
 	}
 
-	sid := uuid.New()
+	// Create a 64 byte sessin ID
+	sid := make([]byte, 64)
+	_, err = rand.Read(sid)
+	fmt.Printf("%x\n", sid)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Unable to login.", http.StatusInternalServerError)
+		return
+	}
 
 	session := repo.Session{
 		Role: "USER",
@@ -61,7 +66,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = rc.Set(context.Background(), sid.String(), ms, 0).Err()
+	err = rc.Set(context.Background(), fmt.Sprintf("%x", sid), ms, 0).Err()
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Error logging in. Please try again.", http.StatusInternalServerError)
@@ -70,7 +75,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:  "ddgf_sid",
-		Value: sid.String(),
+		Value: fmt.Sprintf("%x", sid),
 	})
 
 	w.WriteHeader(http.StatusOK)

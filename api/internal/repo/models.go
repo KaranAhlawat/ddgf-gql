@@ -14,7 +14,7 @@ type Redis string
 
 type Session struct {
 	Role string    `json:"role"`
-	SID  uuid.UUID `json:"sid"`
+	SID  []byte    `json:"sid"`
 	UID  uuid.UUID `json:"uid"`
 }
 
