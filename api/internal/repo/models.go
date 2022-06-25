@@ -8,6 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
+type Redis string
+
 type Base struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time

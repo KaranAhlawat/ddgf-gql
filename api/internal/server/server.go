@@ -5,10 +5,11 @@ import (
 	"ddgf-new/internal/middleware"
 	"ddgf-new/internal/repo"
 	"ddgf-new/internal/resolver"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/google/uuid"
+	"github.com/go-redis/redis/v9"
 	"github.com/gorilla/mux"
 )
 
@@ -21,7 +22,7 @@ func NewServer() Server {
 	return Server{Router: r}
 }
 
-func (s *Server) SetupRoutes(db *repo.PSQLRepository, sessions *map[uuid.UUID]repo.Session) {
+func (s *Server) SetupRoutes(db *repo.PSQLRepository, rc *redis.Client) {
 	schema := graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolver.Resolver{
 			DB: db,
@@ -29,13 +30,13 @@ func (s *Server) SetupRoutes(db *repo.PSQLRepository, sessions *map[uuid.UUID]re
 	})
 	sh := handler.NewDefaultServer(schema)
 
-	loginHandler := LoginHandler(sessions)
-
 	s.Router.Use(middleware.LoggingMiddleware)
-	s.Router.Handle("/login", loginHandler).Methods("GET", "POST")
+	s.Router.Use(middleware.RedisMiddleware(rc))
+	s.Router.Handle("/login", http.HandlerFunc(LoginHandler)).Methods("GET", "POST")
 
 	apiRouter := s.Router.PathPrefix("/api").Subrouter()
-	apiRouter.Use(middleware.AuthMiddleware(sessions))
+
+	apiRouter.Use(middleware.AuthMiddleware)
 	apiRouter.Handle("/graphiql", playground.Handler("DDGF", "/api")).Methods("GET")
 	apiRouter.Handle("/", sh).Methods("POST", "OPTIONS", "PUT", "DELETE")
 }
