@@ -65,3 +65,9 @@ func (t *Tag) ToModel() *model.Tag {
 		Tag: t.Tag,
 	}
 }
+
+type Session struct {
+	Role string    `json:"role"`
+	SID  uuid.UUID `json:"sid"`
+	UID  uuid.UUID `json:"uid"`
+}

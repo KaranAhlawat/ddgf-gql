@@ -8,6 +8,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -20,11 +21,7 @@ func NewServer() Server {
 	return Server{Router: r}
 }
 
-func (s *Server) SetupMiddleware() {
-	s.Router.Use(middleware.LoggingMiddleware)
-}
-
-func (s *Server) SetupRoutes(db *repo.PSQLRepository) {
+func (s *Server) SetupRoutes(db *repo.PSQLRepository, sessions *map[uuid.UUID]repo.Session) {
 	schema := graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolver.Resolver{
 			DB: db,
@@ -32,6 +29,13 @@ func (s *Server) SetupRoutes(db *repo.PSQLRepository) {
 	})
 	sh := handler.NewDefaultServer(schema)
 
-	s.Router.Handle("/api/graphiql", playground.Handler("DDGF", "/api")).Methods("GET")
-	s.Router.Handle("/api", sh).Methods("POST", "OPTIONS", "PUT", "DELETE")
+	loginHandler := LoginHandler(sessions)
+
+	s.Router.Use(middleware.LoggingMiddleware)
+	s.Router.Handle("/login", loginHandler).Methods("GET", "POST")
+
+	apiRouter := s.Router.PathPrefix("/api").Subrouter()
+	apiRouter.Use(middleware.AuthMiddleware(sessions))
+	apiRouter.Handle("/graphiql", playground.Handler("DDGF", "/api")).Methods("GET")
+	apiRouter.Handle("/", sh).Methods("POST", "OPTIONS", "PUT", "DELETE")
 }
