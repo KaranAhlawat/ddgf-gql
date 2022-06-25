@@ -74,8 +74,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:  "ddgf_sid",
-		Value: fmt.Sprintf("%x", sid),
+		Name:   "ddgf_sid",
+		Value:  fmt.Sprintf("%x", sid),
+		MaxAge: 60 * 60 * 24 * 7,
 	})
 
 	w.WriteHeader(http.StatusOK)

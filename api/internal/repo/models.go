@@ -12,6 +12,8 @@ import (
 
 type Redis string
 
+type UserInfo string
+
 type Session struct {
 	Role string    `json:"role"`
 	SID  []byte    `json:"sid"`

@@ -10,6 +10,8 @@ import (
 	"github.com/go-redis/redis/v9"
 )
 
+const UserInfoKey repo.UserInfo = "ddgf_userInfo"
+
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get the session ID cookie
@@ -42,6 +44,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Error reading your session. Please reloging.", http.StatusInternalServerError)
 			return
 		}
+
+		ctx := context.WithValue(r.Context(), UserInfoKey, session)
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
