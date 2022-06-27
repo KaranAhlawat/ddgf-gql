@@ -1,16 +1,8 @@
-import type { Component } from 'solid-js'
-import { useRoutes, useLocation } from 'solid-app-router'
+import type { Component } from "solid-js";
 
-import { routes } from './routes'
 
 const App: Component = () => {
-  const location = useLocation()
-  const Route = useRoutes(routes)
+  return <></>;
+};
 
-  return (
-    <>
-    </>
-  )
-}
-
-export default App
+export default App;

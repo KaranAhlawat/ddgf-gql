@@ -9,6 +9,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "prettier": "^2.7.1",
     "vite": "^2.9.9",
     "vite-plugin-solid": "^2.2.6"
   },
