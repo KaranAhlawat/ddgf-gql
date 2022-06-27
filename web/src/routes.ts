@@ -1,3 +1,3 @@
-import type { RouteDefinition } from 'solid-app-router';
+import type { RouteDefinition } from 'solid-app-router'
 
-export const routes: RouteDefinition[] = [];
+export const routes: RouteDefinition[] = []
