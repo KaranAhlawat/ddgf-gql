@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-  config, err := config.LoadConfig("./")
-  if err != nil {
-    log.Fatalf("Unable to read config from .env file: %s\n", err.Error())
-  }
+	cfg, err := config.LoadConfig("./")
+	if err != nil {
+		log.Fatalf("Unable to read config from .env file: %s\n", err.Error())
+	}
 
-	db := repo.InitPostgresConn(config)
-	rr := repo.NewRedisClient(config)
+	db := repo.InitPostgresConn(cfg)
+	rr := repo.NewRedisClient(cfg)
 	pr := repo.NewPSQLRepository(db)
 
 	s := server.NewServer()
